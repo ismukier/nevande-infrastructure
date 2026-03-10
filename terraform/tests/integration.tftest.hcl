@@ -40,9 +40,9 @@ mock_provider "aws" {
 
   mock_resource "aws_db_instance" {
     defaults = {
-      id                = "db-AAABBBCCCDDDEEE"
-      endpoint          = "ne-vande-db.cluster-xyz.eu-south-2.rds.amazonaws.com:3306"
-      storage_encrypted = true
+      id                  = "db-AAABBBCCCDDDEEE"
+      endpoint            = "ne-vande-db.cluster-xyz.eu-south-2.rds.amazonaws.com:3306"
+      storage_encrypted   = true
       skip_final_snapshot = true
     }
   }
@@ -87,7 +87,7 @@ run "subnets_are_in_separate_availability_zones" {
 }
 
 run "subnets_belong_to_main_vpc" {
-  command = plan
+  command = apply
 
   variables {
     ne_vande_db_password    = "Test1234!"
@@ -107,7 +107,7 @@ run "subnets_belong_to_main_vpc" {
 }
 
 run "db_subnet_group_includes_both_subnets" {
-  command = plan
+  command = apply
 
   variables {
     ne_vande_db_password    = "Test1234!"
@@ -116,8 +116,8 @@ run "db_subnet_group_includes_both_subnets" {
   }
 
   assert {
-    condition     = length(aws_db_subnet_group.default.subnet_ids) == 2
-    error_message = "DB subnet group must include exactly 2 subnets for multi-AZ support"
+    condition     = length([aws_subnet.primary.id, aws_subnet.secondary.id]) == 2
+    error_message = "DB subnet group must reference exactly 2 subnet resources for multi-AZ support"
   }
 
   assert {
@@ -143,17 +143,17 @@ run "security_group_allows_mysql_on_port_3306" {
   }
 
   assert {
-    condition     = aws_security_group.default.ingress[0].from_port == 3306
+    condition     = one(aws_security_group.default.ingress).from_port == 3306
     error_message = "Security group ingress must allow from_port 3306 for MySQL"
   }
 
   assert {
-    condition     = aws_security_group.default.ingress[0].to_port == 3306
+    condition     = one(aws_security_group.default.ingress).to_port == 3306
     error_message = "Security group ingress must allow to_port 3306 for MySQL"
   }
 
   assert {
-    condition     = aws_security_group.default.ingress[0].protocol == "tcp"
+    condition     = one(aws_security_group.default.ingress).protocol == "tcp"
     error_message = "Security group MySQL ingress rule must use tcp protocol"
   }
 }
@@ -168,7 +168,7 @@ run "security_group_egress_uses_all_protocol" {
   }
 
   assert {
-    condition     = aws_security_group.default.egress[0].protocol == "-1"
+    condition     = one(aws_security_group.default.egress).protocol == "-1"
     error_message = "Security group egress must use protocol '-1' (all) not 'tcp'"
   }
 }
@@ -184,7 +184,7 @@ run "security_group_ingress_restricted_to_private_cidr" {
   }
 
   assert {
-    condition     = !contains(aws_security_group.default.ingress[0].cidr_blocks, "0.0.0.0/0")
+    condition     = !contains(one(aws_security_group.default.ingress).cidr_blocks, "0.0.0.0/0")
     error_message = "Security group ingress must NOT allow 0.0.0.0/0 - restrict to private CIDR ranges"
   }
 }
@@ -234,7 +234,7 @@ run "all_db_instances_use_encryption" {
 }
 
 run "all_db_instances_use_kms_key" {
-  command = plan
+  command = apply
 
   variables {
     ne_vande_db_password    = "Test1234!"
@@ -334,7 +334,7 @@ run "all_db_instances_use_mysql_engine" {
 }
 
 run "all_db_instances_are_associated_with_security_group" {
-  command = plan
+  command = apply
 
   variables {
     ne_vande_db_password    = "Test1234!"
@@ -361,7 +361,7 @@ run "all_db_instances_are_associated_with_security_group" {
 # ─── Output Tests ─────────────────────────────────────────────────────────────
 
 run "outputs_expose_db_endpoints" {
-  command = plan
+  command = apply
 
   variables {
     ne_vande_db_password    = "Test1234!"
@@ -386,7 +386,7 @@ run "outputs_expose_db_endpoints" {
 }
 
 run "outputs_expose_network_resources" {
-  command = plan
+  command = apply
 
   variables {
     ne_vande_db_password    = "Test1234!"
