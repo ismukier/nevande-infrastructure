@@ -32,7 +32,7 @@ mock_provider "aws" {
   mock_resource "aws_kms_key" {
     defaults = {
       id                  = "mrk-1234567890abcdef1234567890abcdef"
-      arn                 = "arn:aws:kms:us-west-2:123456789012:key/mrk-1234567890abcdef1234567890abcdef"
+      arn                 = "arn:aws:kms:eu-south-2:123456789012:key/mrk-1234567890abcdef1234567890abcdef"
       key_id              = "mrk-1234567890abcdef1234567890abcdef"
       enable_key_rotation = true
     }
@@ -41,7 +41,7 @@ mock_provider "aws" {
   mock_resource "aws_db_instance" {
     defaults = {
       id                = "db-AAABBBCCCDDDEEE"
-      endpoint          = "ne-vande-db.cluster-xyz.us-west-2.rds.amazonaws.com:3306"
+      endpoint          = "ne-vande-db.cluster-xyz.eu-south-2.rds.amazonaws.com:3306"
       storage_encrypted = true
       skip_final_snapshot = true
     }
@@ -72,17 +72,17 @@ run "subnets_are_in_separate_availability_zones" {
     ne_vande_db_password    = "Test1234!"
     vitality_db_password    = "Test1234!"
     proaging360_db_password = "Test1234!"
-    aws_region              = "us-west-2"
+    aws_region              = "eu-south-2"
   }
 
   assert {
-    condition     = aws_subnet.primary.availability_zone == "us-west-2a"
-    error_message = "Primary subnet must be in availability zone us-west-2a"
+    condition     = aws_subnet.primary.availability_zone == "eu-south-2a"
+    error_message = "Primary subnet must be in availability zone eu-south-2a"
   }
 
   assert {
-    condition     = aws_subnet.secondary.availability_zone == "us-west-2b"
-    error_message = "Secondary subnet must be in availability zone us-west-2b"
+    condition     = aws_subnet.secondary.availability_zone == "eu-south-2b"
+    error_message = "Secondary subnet must be in availability zone eu-south-2b"
   }
 }
 

@@ -1,7 +1,7 @@
 variable "aws_region" {
-  description = "The AWS region to deploy resources into"
+  description = "The AWS region to deploy resources into (default: eu-south-2, Spain)"
   type        = string
-  default     = "us-west-2"
+  default     = "eu-south-2"
 }
 
 variable "db_instance_class" {
