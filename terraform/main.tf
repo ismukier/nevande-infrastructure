@@ -40,7 +40,7 @@ resource "aws_subnet" "secondary" {
   }
 }
 
-resource "aws_db_subnet_group" "default" {
+resource "aws_db_subnet_group" "rds_subnet_group" {
   name       = "main-db-subnet-group"
   subnet_ids = [aws_subnet.primary.id, aws_subnet.secondary.id]
 
@@ -58,10 +58,10 @@ resource "aws_db_instance" "ne_vande" {
   db_name                = "ne_vande"
   username               = "admin"
   password               = var.ne_vande_db_password
-  db_subnet_group_name   = aws_db_subnet_group.default.name
-  vpc_security_group_ids = [aws_security_group.default.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds_mysql_access.id]
   storage_encrypted      = true
-  kms_key_id             = aws_kms_key.default.arn
+  kms_key_id             = aws_kms_key.rds_encryption.arn
   skip_final_snapshot    = true
 
   tags = {
@@ -78,10 +78,10 @@ resource "aws_db_instance" "vitality" {
   db_name                = "vitality"
   username               = "admin"
   password               = var.vitality_db_password
-  db_subnet_group_name   = aws_db_subnet_group.default.name
-  vpc_security_group_ids = [aws_security_group.default.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds_mysql_access.id]
   storage_encrypted      = true
-  kms_key_id             = aws_kms_key.default.arn
+  kms_key_id             = aws_kms_key.rds_encryption.arn
   skip_final_snapshot    = true
 
   tags = {
@@ -98,10 +98,10 @@ resource "aws_db_instance" "proaging360" {
   db_name                = "proaging360"
   username               = "admin"
   password               = var.proaging360_db_password
-  db_subnet_group_name   = aws_db_subnet_group.default.name
-  vpc_security_group_ids = [aws_security_group.default.id]
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.rds_mysql_access.id]
   storage_encrypted      = true
-  kms_key_id             = aws_kms_key.default.arn
+  kms_key_id             = aws_kms_key.rds_encryption.arn
   skip_final_snapshot    = true
 
   tags = {
@@ -109,7 +109,7 @@ resource "aws_db_instance" "proaging360" {
   }
 }
 
-resource "aws_security_group" "default" {
+resource "aws_security_group" "rds_mysql_access" {
   vpc_id = aws_vpc.main.id
 
   ingress {
@@ -129,11 +129,11 @@ resource "aws_security_group" "default" {
   }
 
   tags = {
-    Name = "default-sg"
+    Name = "rds-mysql-access-sg"
   }
 }
 
-resource "aws_kms_key" "default" {
+resource "aws_kms_key" "rds_encryption" {
   description             = "KMS key for RDS encryption"
   deletion_window_in_days = 7
   enable_key_rotation     = true
@@ -161,15 +161,15 @@ output "vpc_id" {
 
 output "db_subnet_group_name" {
   description = "The name of the DB subnet group"
-  value       = aws_db_subnet_group.default.name
+  value       = aws_db_subnet_group.rds_subnet_group.name
 }
 
 output "security_group_id" {
-  description = "The ID of the default security group"
-  value       = aws_security_group.default.id
+  description = "The ID of the RDS MySQL access security group"
+  value       = aws_security_group.rds_mysql_access.id
 }
 
 output "kms_key_arn" {
   description = "The ARN of the KMS key used for RDS encryption"
-  value       = aws_kms_key.default.arn
+  value       = aws_kms_key.rds_encryption.arn
 }

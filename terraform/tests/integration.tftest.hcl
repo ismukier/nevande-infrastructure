@@ -121,12 +121,12 @@ run "db_subnet_group_includes_both_subnets" {
   }
 
   assert {
-    condition     = contains(aws_db_subnet_group.default.subnet_ids, aws_subnet.primary.id)
+    condition     = contains(aws_db_subnet_group.rds_subnet_group.subnet_ids, aws_subnet.primary.id)
     error_message = "DB subnet group must include the primary subnet"
   }
 
   assert {
-    condition     = contains(aws_db_subnet_group.default.subnet_ids, aws_subnet.secondary.id)
+    condition     = contains(aws_db_subnet_group.rds_subnet_group.subnet_ids, aws_subnet.secondary.id)
     error_message = "DB subnet group must include the secondary subnet"
   }
 }
@@ -143,17 +143,17 @@ run "security_group_allows_mysql_on_port_3306" {
   }
 
   assert {
-    condition     = one(aws_security_group.default.ingress).from_port == 3306
+    condition     = one(aws_security_group.rds_mysql_access.ingress).from_port == 3306
     error_message = "Security group ingress must allow from_port 3306 for MySQL"
   }
 
   assert {
-    condition     = one(aws_security_group.default.ingress).to_port == 3306
+    condition     = one(aws_security_group.rds_mysql_access.ingress).to_port == 3306
     error_message = "Security group ingress must allow to_port 3306 for MySQL"
   }
 
   assert {
-    condition     = one(aws_security_group.default.ingress).protocol == "tcp"
+    condition     = one(aws_security_group.rds_mysql_access.ingress).protocol == "tcp"
     error_message = "Security group MySQL ingress rule must use tcp protocol"
   }
 }
@@ -168,7 +168,7 @@ run "security_group_egress_uses_all_protocol" {
   }
 
   assert {
-    condition     = one(aws_security_group.default.egress).protocol == "-1"
+    condition     = one(aws_security_group.rds_mysql_access.egress).protocol == "-1"
     error_message = "Security group egress must use protocol '-1' (all) not 'tcp'"
   }
 }
@@ -184,7 +184,7 @@ run "security_group_ingress_restricted_to_private_cidr" {
   }
 
   assert {
-    condition     = !contains(one(aws_security_group.default.ingress).cidr_blocks, "0.0.0.0/0")
+    condition     = !contains(one(aws_security_group.rds_mysql_access.ingress).cidr_blocks, "0.0.0.0/0")
     error_message = "Security group ingress must NOT allow 0.0.0.0/0 - restrict to private CIDR ranges"
   }
 }
@@ -201,7 +201,7 @@ run "kms_key_rotation_is_enabled" {
   }
 
   assert {
-    condition     = aws_kms_key.default.enable_key_rotation == true
+    condition     = aws_kms_key.rds_encryption.enable_key_rotation == true
     error_message = "KMS key rotation must be enabled"
   }
 }
@@ -243,17 +243,17 @@ run "all_db_instances_use_kms_key" {
   }
 
   assert {
-    condition     = aws_db_instance.ne_vande.kms_key_id == aws_kms_key.default.arn
+    condition     = aws_db_instance.ne_vande.kms_key_id == aws_kms_key.rds_encryption.arn
     error_message = "ne_vande DB instance must use the shared KMS key for encryption"
   }
 
   assert {
-    condition     = aws_db_instance.vitality.kms_key_id == aws_kms_key.default.arn
+    condition     = aws_db_instance.vitality.kms_key_id == aws_kms_key.rds_encryption.arn
     error_message = "vitality DB instance must use the shared KMS key for encryption"
   }
 
   assert {
-    condition     = aws_db_instance.proaging360.kms_key_id == aws_kms_key.default.arn
+    condition     = aws_db_instance.proaging360.kms_key_id == aws_kms_key.rds_encryption.arn
     error_message = "proaging360 DB instance must use the shared KMS key for encryption"
   }
 }
@@ -293,17 +293,17 @@ run "all_db_instances_use_shared_subnet_group" {
   }
 
   assert {
-    condition     = aws_db_instance.ne_vande.db_subnet_group_name == aws_db_subnet_group.default.name
+    condition     = aws_db_instance.ne_vande.db_subnet_group_name == aws_db_subnet_group.rds_subnet_group.name
     error_message = "ne_vande DB instance must use the shared DB subnet group"
   }
 
   assert {
-    condition     = aws_db_instance.vitality.db_subnet_group_name == aws_db_subnet_group.default.name
+    condition     = aws_db_instance.vitality.db_subnet_group_name == aws_db_subnet_group.rds_subnet_group.name
     error_message = "vitality DB instance must use the shared DB subnet group"
   }
 
   assert {
-    condition     = aws_db_instance.proaging360.db_subnet_group_name == aws_db_subnet_group.default.name
+    condition     = aws_db_instance.proaging360.db_subnet_group_name == aws_db_subnet_group.rds_subnet_group.name
     error_message = "proaging360 DB instance must use the shared DB subnet group"
   }
 }
@@ -343,18 +343,18 @@ run "all_db_instances_are_associated_with_security_group" {
   }
 
   assert {
-    condition     = contains(aws_db_instance.ne_vande.vpc_security_group_ids, aws_security_group.default.id)
-    error_message = "ne_vande DB instance must be associated with the default security group"
+    condition     = contains(aws_db_instance.ne_vande.vpc_security_group_ids, aws_security_group.rds_mysql_access.id)
+    error_message = "ne_vande DB instance must be associated with the RDS MySQL access security group"
   }
 
   assert {
-    condition     = contains(aws_db_instance.vitality.vpc_security_group_ids, aws_security_group.default.id)
-    error_message = "vitality DB instance must be associated with the default security group"
+    condition     = contains(aws_db_instance.vitality.vpc_security_group_ids, aws_security_group.rds_mysql_access.id)
+    error_message = "vitality DB instance must be associated with the RDS MySQL access security group"
   }
 
   assert {
-    condition     = contains(aws_db_instance.proaging360.vpc_security_group_ids, aws_security_group.default.id)
-    error_message = "proaging360 DB instance must be associated with the default security group"
+    condition     = contains(aws_db_instance.proaging360.vpc_security_group_ids, aws_security_group.rds_mysql_access.id)
+    error_message = "proaging360 DB instance must be associated with the RDS MySQL access security group"
   }
 }
 
@@ -400,17 +400,17 @@ run "outputs_expose_network_resources" {
   }
 
   assert {
-    condition     = output.db_subnet_group_name == aws_db_subnet_group.default.name
+    condition     = output.db_subnet_group_name == aws_db_subnet_group.rds_subnet_group.name
     error_message = "db_subnet_group_name output must equal the subnet group name"
   }
 
   assert {
-    condition     = output.security_group_id == aws_security_group.default.id
+    condition     = output.security_group_id == aws_security_group.rds_mysql_access.id
     error_message = "security_group_id output must equal the security group id"
   }
 
   assert {
-    condition     = output.kms_key_arn == aws_kms_key.default.arn
+    condition     = output.kms_key_arn == aws_kms_key.rds_encryption.arn
     error_message = "kms_key_arn output must equal the KMS key ARN"
   }
 }
