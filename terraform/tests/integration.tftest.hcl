@@ -54,9 +54,11 @@ run "vpc_is_created_with_correct_cidr" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
@@ -69,10 +71,12 @@ run "subnets_are_in_separate_availability_zones" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
-    aws_region              = "eu-south-2"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
+    aws_region = "eu-south-2"
   }
 
   assert {
@@ -90,9 +94,11 @@ run "subnets_belong_to_main_vpc" {
   command = apply
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
@@ -110,9 +116,11 @@ run "db_subnet_group_includes_both_subnets" {
   command = apply
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
@@ -137,9 +145,11 @@ run "security_group_allows_mysql_on_port_3306" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
@@ -162,9 +172,11 @@ run "security_group_egress_uses_all_protocol" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
@@ -177,10 +189,12 @@ run "security_group_ingress_restricted_to_private_cidr" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
-    db_allowed_cidr_blocks  = ["10.0.0.0/8"]
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
+    db_allowed_cidr_blocks = ["10.0.0.0/8"]
   }
 
   assert {
@@ -195,9 +209,11 @@ run "kms_key_rotation_is_enabled" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
@@ -212,23 +228,25 @@ run "all_db_instances_use_encryption" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
-    condition     = aws_db_instance.ne_vande.storage_encrypted == true
+    condition     = aws_db_instance.databases["ne_vande"].storage_encrypted == true
     error_message = "ne_vande DB instance must have storage encryption enabled"
   }
 
   assert {
-    condition     = aws_db_instance.vitality.storage_encrypted == true
+    condition     = aws_db_instance.databases["vitality"].storage_encrypted == true
     error_message = "vitality DB instance must have storage encryption enabled"
   }
 
   assert {
-    condition     = aws_db_instance.proaging360.storage_encrypted == true
+    condition     = aws_db_instance.databases["proaging360"].storage_encrypted == true
     error_message = "proaging360 DB instance must have storage encryption enabled"
   }
 }
@@ -237,23 +255,25 @@ run "all_db_instances_use_kms_key" {
   command = apply
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
-    condition     = aws_db_instance.ne_vande.kms_key_id == aws_kms_key.default.arn
+    condition     = aws_db_instance.databases["ne_vande"].kms_key_id == aws_kms_key.default.arn
     error_message = "ne_vande DB instance must use the shared KMS key for encryption"
   }
 
   assert {
-    condition     = aws_db_instance.vitality.kms_key_id == aws_kms_key.default.arn
+    condition     = aws_db_instance.databases["vitality"].kms_key_id == aws_kms_key.default.arn
     error_message = "vitality DB instance must use the shared KMS key for encryption"
   }
 
   assert {
-    condition     = aws_db_instance.proaging360.kms_key_id == aws_kms_key.default.arn
+    condition     = aws_db_instance.databases["proaging360"].kms_key_id == aws_kms_key.default.arn
     error_message = "proaging360 DB instance must use the shared KMS key for encryption"
   }
 }
@@ -262,23 +282,25 @@ run "all_db_instances_skip_final_snapshot" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
-    condition     = aws_db_instance.ne_vande.skip_final_snapshot == true
+    condition     = aws_db_instance.databases["ne_vande"].skip_final_snapshot == true
     error_message = "ne_vande DB instance must have skip_final_snapshot set to true"
   }
 
   assert {
-    condition     = aws_db_instance.vitality.skip_final_snapshot == true
+    condition     = aws_db_instance.databases["vitality"].skip_final_snapshot == true
     error_message = "vitality DB instance must have skip_final_snapshot set to true"
   }
 
   assert {
-    condition     = aws_db_instance.proaging360.skip_final_snapshot == true
+    condition     = aws_db_instance.databases["proaging360"].skip_final_snapshot == true
     error_message = "proaging360 DB instance must have skip_final_snapshot set to true"
   }
 }
@@ -287,23 +309,25 @@ run "all_db_instances_use_shared_subnet_group" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
-    condition     = aws_db_instance.ne_vande.db_subnet_group_name == aws_db_subnet_group.default.name
+    condition     = aws_db_instance.databases["ne_vande"].db_subnet_group_name == aws_db_subnet_group.default.name
     error_message = "ne_vande DB instance must use the shared DB subnet group"
   }
 
   assert {
-    condition     = aws_db_instance.vitality.db_subnet_group_name == aws_db_subnet_group.default.name
+    condition     = aws_db_instance.databases["vitality"].db_subnet_group_name == aws_db_subnet_group.default.name
     error_message = "vitality DB instance must use the shared DB subnet group"
   }
 
   assert {
-    condition     = aws_db_instance.proaging360.db_subnet_group_name == aws_db_subnet_group.default.name
+    condition     = aws_db_instance.databases["proaging360"].db_subnet_group_name == aws_db_subnet_group.default.name
     error_message = "proaging360 DB instance must use the shared DB subnet group"
   }
 }
@@ -312,23 +336,25 @@ run "all_db_instances_use_mysql_engine" {
   command = plan
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
-    condition     = aws_db_instance.ne_vande.engine == "mysql"
+    condition     = aws_db_instance.databases["ne_vande"].engine == "mysql"
     error_message = "ne_vande DB instance must use the mysql engine"
   }
 
   assert {
-    condition     = aws_db_instance.vitality.engine == "mysql"
+    condition     = aws_db_instance.databases["vitality"].engine == "mysql"
     error_message = "vitality DB instance must use the mysql engine"
   }
 
   assert {
-    condition     = aws_db_instance.proaging360.engine == "mysql"
+    condition     = aws_db_instance.databases["proaging360"].engine == "mysql"
     error_message = "proaging360 DB instance must use the mysql engine"
   }
 }
@@ -337,23 +363,25 @@ run "all_db_instances_are_associated_with_security_group" {
   command = apply
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
-    condition     = contains(aws_db_instance.ne_vande.vpc_security_group_ids, aws_security_group.default.id)
+    condition     = contains(aws_db_instance.databases["ne_vande"].vpc_security_group_ids, aws_security_group.default.id)
     error_message = "ne_vande DB instance must be associated with the default security group"
   }
 
   assert {
-    condition     = contains(aws_db_instance.vitality.vpc_security_group_ids, aws_security_group.default.id)
+    condition     = contains(aws_db_instance.databases["vitality"].vpc_security_group_ids, aws_security_group.default.id)
     error_message = "vitality DB instance must be associated with the default security group"
   }
 
   assert {
-    condition     = contains(aws_db_instance.proaging360.vpc_security_group_ids, aws_security_group.default.id)
+    condition     = contains(aws_db_instance.databases["proaging360"].vpc_security_group_ids, aws_security_group.default.id)
     error_message = "proaging360 DB instance must be associated with the default security group"
   }
 }
@@ -364,24 +392,26 @@ run "outputs_expose_db_endpoints" {
   command = apply
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
-    condition     = output.ne_vande_endpoint == aws_db_instance.ne_vande.endpoint
-    error_message = "ne_vande_endpoint output must equal the DB instance endpoint"
+    condition     = output.db_endpoints["ne_vande"] == aws_db_instance.databases["ne_vande"].endpoint
+    error_message = "db_endpoints[ne_vande] output must equal the DB instance endpoint"
   }
 
   assert {
-    condition     = output.vitality_endpoint == aws_db_instance.vitality.endpoint
-    error_message = "vitality_endpoint output must equal the DB instance endpoint"
+    condition     = output.db_endpoints["vitality"] == aws_db_instance.databases["vitality"].endpoint
+    error_message = "db_endpoints[vitality] output must equal the DB instance endpoint"
   }
 
   assert {
-    condition     = output.proaging360_endpoint == aws_db_instance.proaging360.endpoint
-    error_message = "proaging360_endpoint output must equal the DB instance endpoint"
+    condition     = output.db_endpoints["proaging360"] == aws_db_instance.databases["proaging360"].endpoint
+    error_message = "db_endpoints[proaging360] output must equal the DB instance endpoint"
   }
 }
 
@@ -389,9 +419,11 @@ run "outputs_expose_network_resources" {
   command = apply
 
   variables {
-    ne_vande_db_password    = "Test1234!"
-    vitality_db_password    = "Test1234!"
-    proaging360_db_password = "Test1234!"
+    db_passwords = {
+      ne_vande    = "Test1234!"
+      vitality    = "Test1234!"
+      proaging360 = "Test1234!"
+    }
   }
 
   assert {
@@ -414,3 +446,4 @@ run "outputs_expose_network_resources" {
     error_message = "kms_key_arn output must equal the KMS key ARN"
   }
 }
+

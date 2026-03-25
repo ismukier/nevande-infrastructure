@@ -37,7 +37,3 @@ jobs:
 
       - name: Terraform Integration Tests
         run: terraform test
-        env:
-          TF_VAR_ne_vande_db_password: ${{ secrets.NE_VANDE_DB_PASSWORD || 'CITestPassword123!' }}
-          TF_VAR_vitality_db_password: ${{ secrets.VITALITY_DB_PASSWORD || 'CITestPassword123!' }}
-          TF_VAR_proaging360_db_password: ${{ secrets.PROAGING360_DB_PASSWORD || 'CITestPassword123!' }}
