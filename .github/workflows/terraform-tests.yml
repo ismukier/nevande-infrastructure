@@ -36,8 +36,10 @@ jobs:
         run: terraform validate
 
       - name: Terraform Integration Tests
-        run: terraform test
         env:
-          TF_VAR_ne_vande_db_password: ${{ secrets.NE_VANDE_DB_PASSWORD || 'CITestPassword123!' }}
-          TF_VAR_vitality_db_password: ${{ secrets.VITALITY_DB_PASSWORD || 'CITestPassword123!' }}
-          TF_VAR_proaging360_db_password: ${{ secrets.PROAGING360_DB_PASSWORD || 'CITestPassword123!' }}
+          NE_VANDE_PW: ${{ secrets.NE_VANDE_DB_PASSWORD || 'CITestPassword123!' }}
+          VITALITY_PW: ${{ secrets.VITALITY_DB_PASSWORD || 'CITestPassword123!' }}
+          PROAGING360_PW: ${{ secrets.PROAGING360_DB_PASSWORD || 'CITestPassword123!' }}
+        run: |
+          export TF_VAR_db_passwords="{\"ne_vande\":\"${NE_VANDE_PW}\",\"vitality\":\"${VITALITY_PW}\",\"proaging360\":\"${PROAGING360_PW}\"}"
+          terraform test

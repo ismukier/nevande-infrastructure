@@ -16,21 +16,9 @@ variable "mysql_engine_version" {
   default     = "8.0"
 }
 
-variable "ne_vande_db_password" {
-  description = "Password for the ne_vande database admin user"
-  type        = string
-  sensitive   = true
-}
-
-variable "vitality_db_password" {
-  description = "Password for the vitality database admin user"
-  type        = string
-  sensitive   = true
-}
-
-variable "proaging360_db_password" {
-  description = "Password for the proaging360 database admin user"
-  type        = string
+variable "db_passwords" {
+  description = "Passwords for each database admin user, keyed by database name (ne_vande, vitality, proaging360)"
+  type        = map(string)
   sensitive   = true
 }
 
