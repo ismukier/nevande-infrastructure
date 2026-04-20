@@ -49,35 +49,21 @@ resource "aws_db_subnet_group" "default" {
   }
 }
 
-resource "aws_db_instance" "ne_vande" {
-  identifier             = "ne-vande-db"
-  engine                 = "mysql"
-  engine_version         = var.mysql_engine_version
-  instance_class         = var.db_instance_class
-  allocated_storage      = 20
-  db_name                = "ne_vande"
-  username               = "admin"
-  password               = var.ne_vande_db_password
-  db_subnet_group_name   = aws_db_subnet_group.default.name
-  vpc_security_group_ids = [aws_security_group.default.id]
-  storage_encrypted      = true
-  kms_key_id             = aws_kms_key.default.arn
-  skip_final_snapshot    = true
-
-  tags = {
-    Name = "ne-vande-db"
-  }
+locals {
+  db_identifiers = { for name in nonsensitive(toset(keys(var.db_passwords))) : name => "${replace(name, "_", "-")}-db" }
 }
 
-resource "aws_db_instance" "vitality" {
-  identifier             = "vitality-db"
+resource "aws_db_instance" "databases" {
+  for_each = local.db_identifiers
+
+  identifier             = each.value
   engine                 = "mysql"
   engine_version         = var.mysql_engine_version
   instance_class         = var.db_instance_class
   allocated_storage      = 20
-  db_name                = "vitality"
+  db_name                = each.key
   username               = "admin"
-  password               = var.vitality_db_password
+  password               = var.db_passwords[each.key]
   db_subnet_group_name   = aws_db_subnet_group.default.name
   vpc_security_group_ids = [aws_security_group.default.id]
   storage_encrypted      = true
@@ -85,27 +71,7 @@ resource "aws_db_instance" "vitality" {
   skip_final_snapshot    = true
 
   tags = {
-    Name = "vitality-db"
-  }
-}
-
-resource "aws_db_instance" "proaging360" {
-  identifier             = "proaging360-db"
-  engine                 = "mysql"
-  engine_version         = var.mysql_engine_version
-  instance_class         = var.db_instance_class
-  allocated_storage      = 20
-  db_name                = "proaging360"
-  username               = "admin"
-  password               = var.proaging360_db_password
-  db_subnet_group_name   = aws_db_subnet_group.default.name
-  vpc_security_group_ids = [aws_security_group.default.id]
-  storage_encrypted      = true
-  kms_key_id             = aws_kms_key.default.arn
-  skip_final_snapshot    = true
-
-  tags = {
-    Name = "proaging360-db"
+    Name = each.value
   }
 }
 
@@ -139,19 +105,9 @@ resource "aws_kms_key" "default" {
   enable_key_rotation     = true
 }
 
-output "ne_vande_endpoint" {
-  description = "The connection endpoint for the ne_vande database"
-  value       = aws_db_instance.ne_vande.endpoint
-}
-
-output "vitality_endpoint" {
-  description = "The connection endpoint for the vitality database"
-  value       = aws_db_instance.vitality.endpoint
-}
-
-output "proaging360_endpoint" {
-  description = "The connection endpoint for the proaging360 database"
-  value       = aws_db_instance.proaging360.endpoint
+output "db_endpoints" {
+  description = "The connection endpoints for all database instances, keyed by database name"
+  value       = { for k, v in aws_db_instance.databases : k => v.endpoint }
 }
 
 output "vpc_id" {
